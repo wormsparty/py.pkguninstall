@@ -45,7 +45,7 @@ function uninstall_package
 	
 	case "$REPLY" in
 		'') return;;
-		'y'|'Y') ;;
+		'y'|'Y') echo;;
 		*) echo; return;;
 	esac
 	
