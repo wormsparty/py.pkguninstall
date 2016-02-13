@@ -22,18 +22,27 @@ if not args.package:
     parser.print_help()
     sys.exit(1)
 
-packages = subprocess.check_output(['pkgutil', '--pkgs=' + args.package])
-
+try:
+    packages = subprocess.check_output(['pkgutil', '--pkgs=' + args.package])
+except subprocess.CalledProcessError:
+    print('No matching package found.')
+    sys.exit(0)
 
 def remove_file(f):
-    if not os.path.isdir(f):
+    if os.path.exists(f) and not os.path.isdir(f):
         os.remove(f)
-        os.removedirs(os.path.dirname(f))
-
+	
+	try:
+        	os.removedirs(os.path.dirname(f))
+	except OSError:
+		pass
 
 def uninstall_package(package):
     info = subprocess.check_output(['pkgutil', '--pkg-info', package])
     location = info.splitlines()[3][10:]
+
+    if not location.startswith('/'):
+        location = '/' + location
 
     # Only to remove duplicated slashed when showing the files to the user
     # The filesystem doesn't care
@@ -42,7 +51,7 @@ def uninstall_package(package):
 
     print("I'll be removing the following files:\n")
 
-    files = subprocess.check_output(['pkgutil', '--files', package])
+    files = subprocess.check_output(['pkgutil', '--files', package]).splitlines()
 
     for f in files:
         print(location + '/' + f)
