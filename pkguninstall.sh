@@ -23,7 +23,7 @@ function try_remove_directory
 
 function remove_file
 {
-	if [ -f "$1" ]; then
+	if [ ! -d "$1" ]; then
 		rm -f $1
 		try_remove_directory `dirname "$1"`
 	fi 
