@@ -5,10 +5,6 @@ import sys
 import argparse
 import subprocess
 
-if not os.geteuid() == 0:
-    print("This script must be run as root")
-    sys.exit(1)
-
 parser = argparse.ArgumentParser()
 parser.add_argument('action', choices=['list', 'remove'])
 parser.add_argument('package', nargs='?', help='package to uninstall (you can also use regex)')
@@ -20,6 +16,10 @@ if args.action == 'list':
 
 if not args.package:
     parser.print_help()
+    sys.exit(1)
+
+if not os.geteuid() == 0:
+    print("This script must be run as root")
     sys.exit(1)
 
 try:
