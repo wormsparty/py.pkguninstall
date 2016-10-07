@@ -30,4 +30,41 @@ for t in args.t:
 	elif t[-1] == 's':
 		seconds += i
 
-time.sleep(seconds + minutes * 60 + hours * 60 * 60)
+before = time.time()
+
+try:
+	time.sleep(seconds + minutes * 60 + hours * 60 * 60)
+except KeyboardInterrupt:
+	pass
+
+passed = time.time() - before
+hours = int(passed / 3600)
+minutes = int(passed / 60 - (hours * 60))
+seconds = int(passed - (minutes * 60))
+slept = '\nSlept for '
+
+if hours > 0:
+	slept += str(hours)
+
+	if hours > 1:
+		slept += ' hours '
+	else:
+		slept += ' hour '
+
+if minutes > 0:
+	slept += str(minutes)
+
+	if minutes > 1:
+		slept += ' minutes '
+	else:
+		slept += ' minute ' 
+
+if seconds > 0 or (hours == 0 and minutes == 0):
+	slept += str(seconds)
+
+	if seconds > 1:
+		slept += ' seconds '
+	else:
+		slept += ' second'
+
+print(slept)
