@@ -30,7 +30,6 @@ packages = []
 for package in args.packages:
     try:
         output = subprocess.check_output(['pkgutil', '--pkgs=' + package])
-        print("package=" + package + ", output=" + output)
         packages.append(output)
     except subprocess.CalledProcessError:
         print('No matching package found for: ' + package)
