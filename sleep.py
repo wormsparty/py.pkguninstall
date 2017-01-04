@@ -5,15 +5,13 @@ import time
 import argparse
 
 parser = argparse.ArgumentParser()
-parser.add_argument('t', nargs='*', help='time to sleep (Xh Ym Zs)')
+parser.add_argument('t', nargs='*', help='time to sleep (eg. 1h 2m 3s)')
 args = parser.parse_args()
 
 if not args.t:
     parser.print_help()
     sys.exit(1)
 
-hours = 0
-minutes = 0
 seconds = 0
 
 for t in args.t:
@@ -24,16 +22,19 @@ for t in args.t:
     		sys.exit(1)
 			
 	if t[-1] == 'h':
-		hours += i
+		seconds += 3600 * i
 	elif t[-1] == 'm':
-		minutes += i
+		seconds += 60 * i
 	elif t[-1] == 's':
 		seconds += i
-
+	else:
+    		parser.print_help()
+    		sys.exit(1)
+		
 before = time.time()
 
 try:
-	time.sleep(seconds + minutes * 60 + hours * 60 * 60)
+	time.sleep(seconds)
 except KeyboardInterrupt:
 	pass
 
@@ -41,7 +42,7 @@ passed = time.time() - before
 hours = int(passed / 3600)
 minutes = int(passed / 60 - (hours * 60))
 seconds = int(passed - (minutes * 60))
-slept = '\nSlept for '
+slept = 'Slept for '
 
 if hours > 0:
 	slept += str(hours)
@@ -65,6 +66,6 @@ if seconds > 0 or (hours == 0 and minutes == 0):
 	if seconds > 1:
 		slept += ' seconds '
 	else:
-		slept += ' second'
+		slept += ' second '
 
 print(slept)
