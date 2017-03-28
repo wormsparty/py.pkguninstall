@@ -10,7 +10,7 @@ parser.add_argument('packages', nargs='*', help='packages to uninstall (you can 
 args = parser.parse_args()
 
 # Print all available packages (accept Apple ones) when called with no argument.
-# Does not requier any privileges.
+# Does not require any privileges.
 if not args.packages:
     parser.print_help()
     
@@ -38,15 +38,15 @@ for package in args.packages:
 def remove_file(f):
     if os.path.exists(f) and not os.path.isdir(f):
         os.remove(f)
-	
-	try:
-        	os.removedirs(os.path.dirname(f))
-	except OSError:
-		pass
+
+    try:
+        os.removedirs(os.path.dirname(f))
+    except OSError:
+        pass
 
 
-def uninstall_package(package):
-    info = subprocess.check_output(['pkgutil', '--pkg-info', package])
+def uninstall_package(pkg):
+    info = subprocess.check_output(['pkgutil', '--pkg-info', pkg])
     location = info.splitlines()[3][10:]
 
     if not location.startswith('/'):
@@ -59,28 +59,27 @@ def uninstall_package(package):
 
     print("I'll be removing the following files:\n")
 
-    files = subprocess.check_output(['pkgutil', '--files', package]).splitlines()
+    files = subprocess.check_output(['pkgutil', '--files', pkg]).splitlines()
 
     for f in files:
         print(location + '/' + f)
 
     sys.stdout.write("\nProceed? This cannot be undone. (y/N) ")
-    choice = raw_input().lower()
+    yesno = raw_input().lower()
 
-    if not choice == 'y':
+    if not yesno == 'y':
         return
 
     for f in files:
         remove_file(location + '/' + f)
 
-    subprocess.check_output(['pkgutil', '--forget', package])
+    subprocess.check_output(['pkgutil', '--forget', pkg])
 
 
 for package in packages:
     for p in package.splitlines():
-    	sys.stdout.write("Uninstall " + p + " ? (y/N) ")
-    	choice = raw_input().lower()
+        sys.stdout.write("Uninstall " + p + " ? (y/N) ")
+        choice = raw_input().lower()
 
         if choice == 'y':
             uninstall_package(p)
-

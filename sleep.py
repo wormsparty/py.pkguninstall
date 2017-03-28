@@ -15,28 +15,27 @@ if not args.t:
 seconds = 0
 
 for t in args.t:
-	try:
-		i = int(t[0:-1])
-	except ValueError:
-    		parser.print_help()
-    		sys.exit(1)
-			
-	if t[-1] == 'h':
-		seconds += 3600 * i
-	elif t[-1] == 'm':
-		seconds += 60 * i
-	elif t[-1] == 's':
-		seconds += i
-	else:
-    		parser.print_help()
-    		sys.exit(1)
-		
+    try:
+        i = int(t[0:-1])
+    except ValueError:
+        parser.print_help()
+        sys.exit(1)
+
+    if t[-1] == 'h':
+        seconds += 3600 * i
+    elif t[-1] == 'm':
+        seconds += 60 * i
+    elif t[-1] == 's':
+        seconds += i
+    else:
+        parser.print_help()
+
 before = time.time()
 
 try:
-	time.sleep(seconds)
+    time.sleep(seconds)
 except KeyboardInterrupt:
-	pass
+    pass
 
 passed = time.time() - before
 hours = int(passed / 3600)
@@ -45,27 +44,27 @@ seconds = int(passed - (minutes * 60))
 slept = 'Slept for '
 
 if hours > 0:
-	slept += str(hours)
+    slept += str(hours)
 
-	if hours > 1:
-		slept += ' hours '
-	else:
-		slept += ' hour '
+    if hours > 1:
+        slept += ' hours '
+    else:
+        slept += ' hour '
 
 if minutes > 0:
-	slept += str(minutes)
+    slept += str(minutes)
 
-	if minutes > 1:
-		slept += ' minutes '
-	else:
-		slept += ' minute ' 
+    if minutes > 1:
+        slept += ' minutes '
+    else:
+        slept += ' minute '
 
 if seconds > 0 or (hours == 0 and minutes == 0):
-	slept += str(seconds)
+    slept += str(seconds)
 
-	if seconds > 1:
-		slept += ' seconds '
-	else:
-		slept += ' second '
+    if seconds > 1:
+        slept += ' seconds '
+    else:
+        slept += ' second '
 
 print(slept)
