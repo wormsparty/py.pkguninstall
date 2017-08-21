@@ -9,8 +9,8 @@ parser = argparse.ArgumentParser()
 parser.add_argument('packages', nargs='*', help='packages to uninstall (you can also use regex)')
 args = parser.parse_args()
 
-# Print all available packages (accept Apple ones) when called with no argument.
-# Does not require any privileges.
+# Print all available packages (exccept Apple ones) when called with no argument.
+# Does not require any privilege.
 if not args.packages:
     parser.print_help()
     
@@ -21,12 +21,16 @@ if not args.packages:
     print("\n")
     sys.exit(0)
 
+# To uninstall, we need to be root.
 if not os.geteuid() == 0:
     print("This script must be run as root")
     sys.exit(1)
 
 packages = []
 
+# List the packages to uninstall according to the script arguments.
+# Note that we do not make any restrictions here and can
+# remove Apple packages if asked to!
 for package in args.packages:
     try:
         output = subprocess.check_output(['pkgutil', '--pkgs=' + package])
@@ -52,7 +56,7 @@ def uninstall_package(pkg):
     if not location.startswith('/'):
         location = '/' + location
 
-    # Only to remove duplicated slashed when showing the files to the user
+    # We only to remove duplicated slashes when showing the files to the user
     # The filesystem doesn't care
     if location.endswith('/'):
         location = location[:-1]
