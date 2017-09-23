@@ -20,7 +20,7 @@ for t in args.t:
     except ValueError:
         parser.print_help()
         sys.exit(1)
-	
+
     if t[-1] == 'd':
         seconds += 60.0 * 60.0 * 24.0 * i
     elif t[-1] == 'h':
@@ -32,10 +32,10 @@ for t in args.t:
     else:
         parser.print_help()
         sys.exit(1)
-		
+
 diff = seconds - int(seconds)
 
-if (diff > 0.0):
+if diff > 0.0:
     print('Warning: Ignoring ' + str(diff) + 's')
 
 before = time.time()

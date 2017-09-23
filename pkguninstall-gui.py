@@ -4,30 +4,35 @@ import os
 import sys
 import argparse
 import subprocess
-
-parser = argparse.ArgumentParser()
-parser.add_argument('packages', nargs='*', help='packages to uninstall (you can also use regex)')
-args = parser.parse_args()
-
-# Print all available packages (exccept Apple ones) when called with no argument.
-# Does not require any privilege.
-if not args.packages:
-    parser.print_help()
-    
-    print("\n  List of available packages:\n")
-    pkgutil = subprocess.Popen(('pkgutil', '--pkgs'), stdout=subprocess.PIPE)
-    output = subprocess.call(('grep', '-v', '^com.apple.'), stdin=pkgutil.stdout)
-    pkgutil.wait()
-    print("\n")
-    sys.exit(0)
+import tkinter
 
 # To uninstall, we need to be root.
-if not os.geteuid() == 0:
-    print("This script must be run as root")
-    sys.exit(1)
+#if not os.geteuid() == 0:
+ #   print("This script must be run as root")
+  #  sys.exit(1)
 
-packages = []
+# First create the window
+window = tkinter.Tk()
 
+# Let's construct the list which will contain all packages we can uninstall
+list = tkinter.Listbox(window)
+
+# Let's list the packages
+pkgutil = subprocess.Popen(('pkgutil', '--pkgs'), stdout=subprocess.PIPE)
+output = subprocess.check_output(('grep', '-v', '^com.apple.'), stdin=pkgutil.stdout)
+
+# We now fill the list
+i = 1
+
+for o in output.splitlines():
+    list.insert(i, o)
+    i += 1
+
+list.pack()
+
+window.mainloop()
+
+'''
 # List the packages to uninstall according to the script arguments.
 # Note that we do not make any restrictions here and can
 # remove Apple packages if asked to!
@@ -87,3 +92,5 @@ for package in packages:
 
         if choice == 'y':
             uninstall_package(p)
+            
+'''
