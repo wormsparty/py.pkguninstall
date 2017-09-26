@@ -2,47 +2,40 @@
 
 import os
 import sys
-import argparse
 import subprocess
 import tkinter
+from tkinter import messagebox
 
 # To uninstall, we need to be root.
-#if not os.geteuid() == 0:
- #   print("This script must be run as root")
-  #  sys.exit(1)
+if not os.geteuid() == 0:
+    messagebox.showinfo("Must be root", "This program must be run as root")
+    sys.exit(1)
+
+
+# Let's list the packages
+pkgutil = subprocess.Popen(('pkgutil', '--pkgs'), stdout=subprocess.PIPE)
+output = subprocess.check_output(('grep', '-v', '^com.apple.'), stdin=pkgutil.stdout).splitlines()
 
 # First create the window
 window = tkinter.Tk()
 
-# Let's construct the list which will contain all packages we can uninstall
-list = tkinter.Listbox(window)
+width = 0
 
-# Let's list the packages
-pkgutil = subprocess.Popen(('pkgutil', '--pkgs'), stdout=subprocess.PIPE)
-output = subprocess.check_output(('grep', '-v', '^com.apple.'), stdin=pkgutil.stdout)
+for o in output:
+    width = max(width, len(o))
+
+# Let's construct the list which will contain all packages we can uninstall
+tkinter.Label(window, text='Select a package to uninstall:').pack()
+list = tkinter.Listbox(window, width=width)
 
 # We now fill the list
 i = 1
 
-for o in output.splitlines():
+for o in output:
     list.insert(i, o)
     i += 1
 
 list.pack()
-
-window.mainloop()
-
-'''
-# List the packages to uninstall according to the script arguments.
-# Note that we do not make any restrictions here and can
-# remove Apple packages if asked to!
-for package in args.packages:
-    try:
-        output = subprocess.check_output(['pkgutil', '--pkgs=' + package])
-        packages.append(output)
-    except subprocess.CalledProcessError:
-        print('No matching package found for: ' + package)
-
 
 def remove_file(f):
     if os.path.exists(f) and not os.path.isdir(f):
@@ -66,18 +59,7 @@ def uninstall_package(pkg):
     if location.endswith('/'):
         location = location[:-1]
 
-    print("I'll be removing the following files:\n")
-
     files = subprocess.check_output(['pkgutil', '--files', pkg]).splitlines()
-
-    for f in files:
-        print(location + '/' + f)
-
-    sys.stdout.write("\nProceed? This cannot be undone. (y/N) ")
-    yesno = input().lower()
-
-    if not yesno == 'y':
-        return
 
     for f in files:
         remove_file(location + '/' + f)
@@ -85,12 +67,14 @@ def uninstall_package(pkg):
     subprocess.check_output(['pkgutil', '--forget', pkg])
 
 
-for package in packages:
-    for p in package.splitlines():
-        sys.stdout.write("Uninstall " + p + " ? (y/N) ")
-        choice = raw_input().lower()
+def uninstall():
+    selection = list.get(list.curselection()).decode('utf-8')
 
-        if choice == 'y':
-            uninstall_package(p)
-            
-'''
+    if messagebox.askyesno("Confirmation", "Are you sure you wish to uninstall " + selection + "?"):
+        uninstall_package(selection)
+
+
+tkinter.Button(window, text='Uninstall', command=uninstall).pack()
+
+window.mainloop()
+
