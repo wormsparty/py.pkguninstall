@@ -51,7 +51,7 @@ def remove_file(f):
 
 def uninstall_package(pkg):
     info = subprocess.check_output(['pkgutil', '--pkg-info', pkg])
-    location = info.splitlines()[3][10:]
+    location = info.splitlines()[3][10:].decode('utf-8')
 
     if not location.startswith('/'):
         location = '/' + location
@@ -66,7 +66,7 @@ def uninstall_package(pkg):
     files = subprocess.check_output(['pkgutil', '--files', pkg]).splitlines()
 
     for f in files:
-        print(location + '/' + f)
+        print(location + '/' + f.decode('utf-8'))
 
     sys.stdout.write("\nProceed? This cannot be undone. (y/N) ")
     yesno = input().lower()
@@ -75,15 +75,15 @@ def uninstall_package(pkg):
         return
 
     for f in files:
-        remove_file(location + '/' + f)
+        remove_file(location + '/' + f.decode('utf-8'))
 
     subprocess.check_output(['pkgutil', '--forget', pkg])
 
 
 for package in packages:
     for p in package.splitlines():
-        sys.stdout.write("Uninstall " + p + " ? (y/N) ")
-        choice = raw_input().lower()
+        sys.stdout.write("Uninstall " + p.decode('utf-8') + " ? (y/N) ")
+        choice = input().lower()
 
         if choice == 'y':
             uninstall_package(p)
