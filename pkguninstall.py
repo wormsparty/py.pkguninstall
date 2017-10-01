@@ -49,15 +49,6 @@ def remove_file(f):
         pass
 
 
-def print_file_if_exists(filename):
-    try:
-	f = file(filename)
-        print(filename)
-	f.close()
-    except IOError:
-       pass
-
-
 def uninstall_package(pkg):
     info = subprocess.check_output(['pkgutil', '--pkg-info', pkg])
     location = info.splitlines()[3][10:].decode('utf-8')
@@ -85,13 +76,6 @@ def uninstall_package(pkg):
 
     for f in files:
         remove_file(location + '/' + f.decode('utf-8'))
-
-    print("\nDo you want to remove Cache files for " + pkg + "?");
-
-    print_file_if_exists('/Library/Caches/' + pkg)
-    print_file_if_exists('/Library/Preferences/' + pkg)
-
-    here list all caches and preferences from all users (we are root after all)
 
     subprocess.check_output(['pkgutil', '--forget', pkg])
 
