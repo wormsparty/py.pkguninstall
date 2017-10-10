@@ -6,11 +6,6 @@ import subprocess
 import tkinter
 from tkinter import messagebox
 
-# To uninstall, we need to be root.
-#if not os.geteuid() == 0:
- #   messagebox.showinfo("Must be root", "This program must be run as root")
-  #  sys.exit(1)
-
 # First create the window
 window = tkinter.Tk()
 
@@ -22,6 +17,8 @@ list.pack()
 
 
 def refresh():
+    list.delete(0, list.size())
+
     # Let's list the packages
     pkgutil = subprocess.Popen(('pkgutil', '--pkgs'), stdout=subprocess.PIPE)
     output = subprocess.check_output(('grep', '-v', '^com.apple.'), stdin=pkgutil.stdout).splitlines()
@@ -45,23 +42,12 @@ def remove_file(f):
 
 
 def uninstall_package(pkg):
-    info = subprocess.check_output(['pkgutil', '--pkg-info', pkg])
-    location = info.splitlines()[3][10:].decode('utf-8')
-
-    if not location.startswith('/'):
-        location = '/' + location
-
-    # We only to remove duplicated slashes when showing the files to the user
-    # The filesystem doesn't care
-    if location.endswith('/'):
-        location = location[:-1]
-
-    files = subprocess.check_output(['pkgutil', '--files', pkg]).splitlines()
-
-    for f in files:
-        remove_file(location + '/' + f.decode('utf-8'))
-
-    subprocess.check_output(['pkgutil', '--forget', pkg])
+    directory = os.path.dirname(os.path.realpath(__file__))
+    script = 'do shell script "' + sys.executable + ' ' + \
+             directory + '/pkguninstall.py -y ' + pkg.decode('utf-8') + '" with administrator privileges'
+    print(script)
+    subprocess.call(['osascript', '-e', script])
+    refresh()
 
 
 def uninstall():

@@ -6,6 +6,7 @@ import argparse
 import subprocess
 
 parser = argparse.ArgumentParser()
+parser.add_argument('-y', '--yes', action='store_true', dest='yes', default=False, help='auto accept')
 parser.add_argument('packages', nargs='*', help='packages to uninstall (you can also use regex)')
 args = parser.parse_args()
 
@@ -49,15 +50,6 @@ def remove_file(f):
         pass
 
 
-def print_file_if_exists(filename):
-    try:
-	f = file(filename)
-        print(filename)
-	f.close()
-    except IOError:
-       pass
-
-
 def uninstall_package(pkg):
     info = subprocess.check_output(['pkgutil', '--pkg-info', pkg])
     location = info.splitlines()[3][10:].decode('utf-8')
@@ -77,29 +69,26 @@ def uninstall_package(pkg):
     for f in files:
         print(location + '/' + f.decode('utf-8'))
 
-    print("\nProceed? This cannot be undone. (y/N) ")
-    yesno = input().lower()
+    if not args.yes:
+        sys.stdout.write("\nProceed? This cannot be undone. (y/N) ")
+        yesno = input().lower()
 
-    if not yesno == 'y':
-        return
+        if not yesno == 'y':
+            return
 
     for f in files:
         remove_file(location + '/' + f.decode('utf-8'))
-
-    print("\nDo you want to remove Cache files for " + pkg + "?");
-
-    print_file_if_exists('/Library/Caches/' + pkg)
-    print_file_if_exists('/Library/Preferences/' + pkg)
-
-    here list all caches and preferences from all users (we are root after all)
 
     subprocess.check_output(['pkgutil', '--forget', pkg])
 
 
 for package in packages:
     for p in package.splitlines():
-        sys.stdout.write("Uninstall " + p.decode('utf-8') + " ? (y/N) ")
-        choice = input().lower()
+        if not args.yes:
+            sys.stdout.write("Uninstall " + p.decode('utf-8') + " ? (y/N) ")
+            choice = input().lower()
 
-        if choice == 'y':
+            if choice == 'y':
+                uninstall_package(p)
+        else:
             uninstall_package(p)
