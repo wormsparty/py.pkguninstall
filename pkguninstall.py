@@ -6,15 +6,18 @@ import argparse
 import subprocess
 
 parser = argparse.ArgumentParser()
-parser.add_argument('-y', '--yes', action='store_true', dest='yes', default=False, help='auto accept')
-parser.add_argument('packages', nargs='*', help='packages to uninstall (you can also use regex)')
+parser.add_argument('-y', '--yes', action='store_true', dest='yes', default=False,
+                    help='Uninstall without asking for confirmation')
+parser.add_argument('packages', nargs='*',
+                    help='List of packages to uninstall (you can use regular expressions). '
+                         'Specify none to list all available packages.')
 args = parser.parse_args()
 
-# Print all available packages (exccept Apple ones) when called with no argument.
+# Print all available packages (except Apple ones) when called with no argument.
 # Does not require any privilege.
 if not args.packages:
     parser.print_help()
-    
+
     print("\n  List of available packages:\n")
     pkgutil = subprocess.Popen(('pkgutil', '--pkgs'), stdout=subprocess.PIPE)
     output = subprocess.call(('grep', '-v', '^com.apple.'), stdin=pkgutil.stdout)
@@ -26,6 +29,16 @@ if not args.packages:
 if not os.geteuid() == 0:
     print("This script must be run as root")
     sys.exit(1)
+
+roots = ['']
+
+for d in os.listdir('/Users'):
+    try:
+        os.listdir('/Users/' + d)
+        roots.append(d)
+    except NotADirectoryError:
+        pass
+
 
 packages = []
 
@@ -79,6 +92,16 @@ def uninstall_package(pkg):
     for f in files:
         remove_file(location + '/' + f.decode('utf-8'))
 
+    for root in roots:
+        ''' We clear this file for all users, because sometimes
+            packages are detected to be installed according to the presence of these files,
+            including the AppStore. '''
+        subprocess.call(['rm', '-fr', root + '/Library/Preferences/' + pkg.decode('utf-8') + '.plist'])
+        ''' We clear the Containers folder, which can contain large caching files depending on
+            the application. For others, like Cache folder, they usually use the product 
+            name instead of the package name, making it hard to find and delete them. '''
+        subprocess.call(['rm', '-fr', root + '/Library/Containers/' + pkg.decode('utf-8')])
+    
     subprocess.check_output(['pkgutil', '--forget', pkg])
 
 
